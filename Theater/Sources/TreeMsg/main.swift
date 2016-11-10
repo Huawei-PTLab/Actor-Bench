@@ -1,6 +1,11 @@
 import Theater
 import Foundation
-import Glibc
+#if os(Linux)
+    import Glibc
+#else
+    import Darwin
+#endif
+
 
 // Messages
 class Token: Actor.Message{}
@@ -22,11 +27,11 @@ class Node: Actor {
 	var lChild: ActorRef?
 	var rChild: ActorRef?
 
-	required init(context: ActorSystem, ref: ActorRef, args: [Any]! = nil) {
-		self.level = args[0] as! Int
-		self.root = args[1] as! ActorRef
-		self.maxLevel = args[2] as! Int
-		super.init(context: context, ref: ref, args: args)
+    init(context: ActorCell, level: Int, root: ActorRef, maxLevel: Int) {
+		self.level = level
+		self.root = root
+		self.maxLevel = maxLevel
+		super.init(context: context)
 	}
 
 	override func receive(_ msg: Actor.Message) {
@@ -37,18 +42,18 @@ class Node: Actor {
 				let endTime = NSDate().timeIntervalSince1970
 				root ! TimeStamp(end: endTime, sender: this)
 			} else {
-				self.lChild = self.actorOf(Node.self, name: "LN\(level + 1)", args: [level + 1, root, maxLevel])
-				self.rChild = self.actorOf(Node.self, name: "RN\(level + 1)", args: [level + 1, root, maxLevel])
+                self.lChild = context.actorOf(name: "LN\(level + 1)", { (context: ActorCell) in Node(context: context, level: self.level + 1, root: self.root, maxLevel: self.maxLevel) })
+                self.rChild = context.actorOf(name: "RN\(level + 1)", { (context: ActorCell) in Node(context: context, level: self.level + 1, root: self.root, maxLevel: self.maxLevel) })
 				self.lChild! ! CreateTree(sender: nil)
 				self.rChild! ! CreateTree(sender: nil)
 			}
 		case is Token:
 			guard lChild != nil && rChild != nil else {
-				sender! ! Response(sender: this)	// send response to root node
+				msg.sender ! Response(sender: this)	// send response to root node
 				return
 			}
-			lChild! ! Token(sender: sender)	// send response to root node
-			rChild! ! Token(sender: sender)
+			lChild! ! Token(sender: msg.sender)	// send response to root node
+			rChild! ! Token(sender: msg.sender)
 		default:
 			print("Unexpected message")
 		}
@@ -68,10 +73,10 @@ class RootNode: Actor {
 	}
 	let nMsg: Int
 
-	required init(context: ActorSystem, ref: ActorRef, args: [Any]! = nil) {
-		self.maxLevel = args[0] as! Int
-		self.nMsg = args[1] as! Int
-		super.init(context: context, ref: ref, args: args)
+    init(context: ActorCell, maxLevel: Int, nMsg: Int) {
+		self.maxLevel = maxLevel
+		self.nMsg = nMsg
+		super.init(context: context)
 	}
 
 	override func receive(_ msg: Actor.Message) {
@@ -82,8 +87,8 @@ class RootNode: Actor {
 				let endTime = NSDate().timeIntervalSince1970
 				this ! TimeStamp(end: endTime, sender: this)
 			} else {
-				self.lChild = self.actorOf(Node.self, name: "LN2", args: [2, this, maxLevel])
-				self.rChild = self.actorOf(Node.self, name: "RN2", args: [2, this, maxLevel])
+                self.lChild = context.actorOf(name: "LN2", { (context: ActorCell) in Node(context: context, level: 2, root: self.this, maxLevel: self.maxLevel) })
+                self.lChild = context.actorOf(name: "RN2", { (context: ActorCell) in Node(context: context, level: 2, root: self.this, maxLevel: self.maxLevel) })
 				self.lChild! ! CreateTree(sender: nil)
 				self.rChild! ! CreateTree(sender: nil)
 			} 
@@ -120,9 +125,9 @@ class RootNode: Actor {
 	}
 }
 
-let maxLevel = Int(Process.arguments[1])!
-let nMsg = Int(Process.arguments[2])!
+let maxLevel = Int(CommandLine.arguments[1])!
+let nMsg = Int(CommandLine.arguments[2])!
 let system = ActorSystem(name: "TreeMsg")
-let root = system.actorOf(RootNode.self, name: "root", args: [maxLevel, nMsg])
+let root = system.actorOf(name: "root", { (context: ActorCell) in RootNode(context: context, maxLevel: maxLevel, nMsg: nMsg) })
 root ! CreateTree(sender: nil)
 sleep(300)	// wait to complete

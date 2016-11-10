@@ -18,13 +18,9 @@ class Stop: Actor.Message {}
 
 class DownloadActor: Actor {
 	let indexer: ActorRef
-	required init(context: ActorSystem, ref: ActorRef, args: [Any]! = nil) {
-		guard args[0] is ActorRef else {
-			print("WrongArgumentType")
-			exit(1)
-		}
-		self.indexer = args[0] as! ActorRef
-		super.init(context: context, ref: ref, args: args)
+    init(context: ActorCell, indexer: ActorRef) {
+		self.indexer = indexer
+		super.init(context: context)
 	}
 	override func receive(_ msg: Actor.Message) {
 		switch(msg) {
@@ -42,13 +38,9 @@ class DownloadActor: Actor {
 
 class IndexActor: Actor {
 	let writer: ActorRef
-	required init(context: ActorSystem, ref: ActorRef, args: [Any]! = nil) {
-		guard args[0] is ActorRef else {
-			print("WrongArgumentType")
-			exit(1)
-		}
-		self.writer = args[0] as! ActorRef
-		super.init(context: context, ref: ref, args: args)
+    init(context: ActorCell, writer: ActorRef) {
+		self.writer = writer
+		super.init(context: context)
 	}
 	override func receive(_ msg: Actor.Message) {
 		switch(msg) {
@@ -83,11 +75,11 @@ class WriteActor: Actor {
 	}
 }	
 
-let nRequests = Int(Process.arguments[1])!
+let nRequests = Int(CommandLine.arguments[1])!
 let system = ActorSystem(name: "pipeline")
-let writeActor = system.actorOf(WriteActor.self, name: "writer")
-let indexActor = system.actorOf(IndexActor.self, name: "indexer", args: [writeActor])
-let downloadActor = system.actorOf(DownloadActor.self, name: "downloader", args: [indexActor])
+let writeActor = system.actorOf(name: "writer", { (context: ActorCell) in WriteActor(context: context) })
+let indexActor = system.actorOf(name: "indexer", { (context: ActorCell) in IndexActor(context: context, writer: writeActor) })
+let downloadActor = system.actorOf(name: "downloader", { (context: ActorCell) in DownloadActor(context: context, indexer: indexActor) })
 startTime = NSDate().timeIntervalSince1970
 print("Start: \(NSDate().description)")
 for i in 1...nRequests {

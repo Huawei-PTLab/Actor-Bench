@@ -21,11 +21,11 @@ class Node: Actor {
 	var lChild: ActorRef?
 	var rChild: ActorRef?
 
-	required init(context: ActorSystem, ref: ActorRef, args: [Any]! = nil) {
-		self.currentLevel = args[0] as! Int
-		self.root = args[1] as! ActorRef
-		self.maxLevel = args[2] as! Int
-		super.init(context: context, ref: ref, args: args)
+    init(context: ActorCell, currentLevel: Int, root: ActorRef, maxLevel: Int) {
+		self.currentLevel = currentLevel
+		self.root = root
+		self.maxLevel = maxLevel
+		super.init(context: context)
 	}
 
 	override func receive(_ msg: Actor.Message) {
@@ -36,8 +36,8 @@ class Node: Actor {
 				let endTime = NSDate().timeIntervalSince1970
 				root ! TimeStamp(end: endTime, sender: this)
 			} else {
-				self.lChild = self.actorOf(Node.self, name: "LN\(currentLevel + 1)", args: [currentLevel + 1, root, maxLevel])
-				self.rChild = self.actorOf(Node.self, name: "RN\(currentLevel + 1)", args: [currentLevel + 1, root, maxLevel])
+                self.lChild = context.actorOf(name: "LN\(currentLevel + 1)", { (context: ActorCell) in Node(context: context, currentLevel: self.currentLevel + 1, root: self.root, maxLevel: self.maxLevel) })
+                self.rChild = context.actorOf(name: "RN\(currentLevel + 1)", { (context: ActorCell) in Node(context: context, currentLevel: self.currentLevel + 1, root: self.root, maxLevel: self.maxLevel) })
 				self.lChild! ! Start(sender: nil)
 				self.rChild! ! Start(sender: nil)
 			}
@@ -62,9 +62,9 @@ class RootNode: Actor {
 	var rChild: ActorRef?
 	let maxLevel: Int
 
-	required init(context: ActorSystem, ref: ActorRef, args: [Any]! = nil) {
-		self.maxLevel = args[0] as! Int
-		super.init(context: context, ref: ref, args: args)
+    required init(context: ActorCell, maxLevel: Int) {
+		self.maxLevel = maxLevel
+		super.init(context: context)
 	}
 
 	override func receive(_ msg: Actor.Message) {
@@ -75,8 +75,8 @@ class RootNode: Actor {
 				let endTime = NSDate().timeIntervalSince1970
 				this ! TimeStamp(end: endTime, sender: this)
 			} else {
-				self.lChild = self.actorOf(Node.self, name: "LN2", args: [2, this, maxLevel])
-				self.rChild = self.actorOf(Node.self, name: "RN2", args: [2, this, maxLevel])
+                self.lChild = context.actorOf(name: "LN2", { (context: ActorCell) in Node(context: context, currentLevel: 2, root: self.this, maxLevel: self.maxLevel) })
+                self.rChild = context.actorOf(name: "RN2", { (context: ActorCell) in Node(context: context, currentLevel: 2, root: self.this, maxLevel: self.maxLevel) })
 				self.lChild! ! Start(sender: nil)
 				self.rChild! ! Start(sender: nil)
 			}
@@ -102,8 +102,8 @@ class RootNode: Actor {
 	}
 }
 
-let maxLevel = Int(Process.arguments[1])!
+let maxLevel = Int(CommandLine.arguments[1])!
 let system = ActorSystem(name: "fork")
-let root = system.actorOf(RootNode.self, name: "root", args: [maxLevel])
+let root = system.actorOf(name: "root", { (context: ActorCell) in RootNode(context: context, maxLevel: maxLevel) })
 root ! Start(sender: nil)
 sleep(3000)	// wait to complete

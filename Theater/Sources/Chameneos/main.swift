@@ -43,14 +43,11 @@ class Chameneo: Actor {
 	var color: Color
 	let cid: Int
 	var meetings = 0
-	required init(context: ActorSystem, ref: ActorRef, args: [Any]! = nil) {
-		guard args[0] is ActorRef && args[1] is Color && args[2] is Int else {
-			print("WrongArgumentType"); exit(0)
-		}
-		self.mall = args[0] as! ActorRef
-		self.color = args[1] as! Color
-		self.cid = args[2] as! Int
-		super.init(context: context, ref: ref, args: args)
+    init(context: ActorCell, mall: ActorRef, color: Color, cid: Int) {
+		self.mall = mall
+		self.color = color
+		self.cid = cid
+		super.init(context: context)
 	}
 
 	override func receive(_ msg: Actor.Message) {
@@ -109,13 +106,10 @@ class Mall: Actor {
 	var sumMeetings: Int = 0
 	var numFaded: Int = 0
 
-	required init(context: ActorSystem, ref: ActorRef, args: [Any]! = nil) {
-		guard args[0] is Int && args[1] is Int else {
-			print("WrongArgumentType"); exit(1)
-		}
-		self.n = args[0] as! Int
-		self.numChameneos = args[1] as! Int
-		super.init(context: context, ref: ref, args: args)
+    init(context: ActorCell, n: Int, numChameneos: Int) {
+		self.n = n
+		self.numChameneos = numChameneos
+		super.init(context: context)
 	}
 
 	override func receive(_ msg: Actor.Message) {
@@ -124,7 +118,7 @@ class Mall: Actor {
 			print("Started: \(NSDate().description)")
 			startTime = NSDate().timeIntervalSince1970
 			for i in 0..<numChameneos {
-				let c = actorOf(Chameneo.self, name: "Chameneo\(i)", args: [this, Color(rawValue: (i % 3)), i])
+                let c = context.actorOf(name: "Chameneo\(i)", { (context: ActorCell) in Chameneo(context: context, mall: self.this, color: Color(rawValue: (i % 3))!, cid: i) })
 				c ! Start(sender: this)
 			}
 		case let mcount as MeetingCount:
@@ -158,9 +152,9 @@ class Mall: Actor {
 	}
 }
 
-let nChameneos = Int(Process.arguments[1])!
-let nHost = Int(Process.arguments[2])!
+let nChameneos = Int(CommandLine.arguments[1])!
+let nHost = Int(CommandLine.arguments[2])!
 let system = ActorSystem(name: "chameneos")
-let mallActor = system.actorOf(Mall.self, name: "mall", args: [nHost, nChameneos])
+let mallActor = system.actorOf(name: "mall", { (context: ActorCell) in Mall(context: context, n: nHost, numChameneos: nChameneos) })
 mallActor ! Start(sender: nil)
 sleep(6000)

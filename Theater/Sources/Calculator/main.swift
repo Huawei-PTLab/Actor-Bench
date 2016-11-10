@@ -1,6 +1,10 @@
 import Theater
 import Foundation
-import Glibc
+#if os(Linux)
+    import Glibc
+#else
+    import Darwin
+#endif
 
 protocol Expr {
 	@discardableResult func compute() -> Int
@@ -45,13 +49,24 @@ struct Const: Expr {
 }
 
 srandom(UInt32(NSDate().timeIntervalSince1970))
-func getRand() -> Int { return Int(random() % 10) }
+func getRand() -> Int {
+    #if os(Linux)
+        return random() % 10
+    #else
+        return Int(arc4random() % 10)
+    #endif
+}
 
 func genRandomExpr(nOps: Int) -> Expr {
 	if nOps == 0 {
 		return Const(value: getRand())
 	} else {
-		let opType = random() % 4 
+        let opType: Int
+        #if os(Linux)
+            opType = random() % 4
+        #else
+            opType = Int(arc4random() % 4)
+        #endif
 		switch opType {
 		case 0:	return Add(left: Const(value: getRand()), right: genRandomExpr(nOps: nOps - 1))
 		case 1: return Sub(left: genRandomExpr(nOps: nOps - 1), right: Const(value: getRand()))
@@ -97,19 +112,19 @@ class Master: Actor {
 	let nExpressions: Int
 	let nOperators: Int
 
-	required init(context: ActorSystem, ref: ActorRef, args: [Any]! = nil) {
-		self.nExpressions = args[0] as! Int
-		self.nOperators = args[1] as! Int
-		self.nSlaves = args[2] as! Int
-		super.init(context: context, ref: ref, args: args)
-	}	
+    init(context: ActorCell, expressions: Int, operators: Int, slaves: Int) {
+		self.nExpressions = expressions
+		self.nOperators = operators
+		self.nSlaves = slaves
+        super.init(context: context)
+	}
 
 	override func receive(_ msg: Actor.Message) {
 		switch(msg) {
 		case is Start:
 			for i in 1...nSlaves {
 				print("Slave \(i) created")
-				slaves.append(actorOf(Slave.self, name: "slave\(i)", args: [self.nOperators]))
+                slaves.append(context.actorOf(name: "slave\(i)", { (context: ActorCell) in Slave(context: context, operators: self.nOperators)}))
 			}
 		case is Request:
 			slaves[curSlave] ! Request(sender: this)
@@ -135,9 +150,9 @@ class Slave: Actor {
 	var count = 0
 	let nOperators: Int
 
-	required init(context: ActorSystem, ref: ActorRef, args: [Any]! = nil) {
-		self.nOperators = args[0] as! Int
-		super.init(context: context, ref: ref, args: args)
+    init(context: ActorCell, operators: Int) {
+		self.nOperators = operators
+        super.init(context: context)
 	}
 
 	override func receive(_ msg: Actor.Message) {
@@ -147,16 +162,16 @@ class Slave: Actor {
 			let expr = genRandomExpr(nOps: nOperators)
 			expr.compute()
 		case is Stop:
-			sender! ! ResultCount(count: count, sender: this)
+			msg.sender ! ResultCount(count: count, sender: this)
 		default:
 			print("Unexpected message")
 		}
 	}
 }
 
-let nExpressions = Int(Process.arguments[1])!
-let nOperators = Int(Process.arguments[2])!
-let nSlaves = Int(Process.arguments[3])!
+let nExpressions = Int(CommandLine.arguments[1])!
+let nOperators = Int(CommandLine.arguments[2])!
+let nSlaves = Int(CommandLine.arguments[3])!
 
 func sequential() {
 	start()
@@ -170,7 +185,7 @@ func sequential() {
 
 func actor() {
 	let system = ActorSystem(name: "Calculator")
-	let master = system.actorOf(Master.self, name: "master", args: [nExpressions, nOperators, nSlaves])
+    let master = system.actorOf(name: "master", { (context: ActorCell) in Master(context: context, expressions: nExpressions, operators: nOperators, slaves: nSlaves) })
 	master ! Start(sender: nil)
 	start()
 	for _ in 1...nExpressions {
