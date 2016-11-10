@@ -32,10 +32,10 @@ class NodeActor: Actor {
 	let nodeId: Int
 	let initValue: Int
 
-	required init(context: ActorSystem, ref: ActorRef, args: [Any]! = nil) {
-		self.nodeId = args[0] as! Int
-		self.initValue = args[1] as! Int
-		super.init(context: context, ref: ref)
+	required init(context: ActorCell, args: [Int]) {
+		self.nodeId = args[0]
+		self.initValue = args[1]
+		super.init(context: context)
 	}
 
 	override func receive(_ msg: Actor.Message) {
@@ -62,15 +62,17 @@ class NodeActor: Actor {
 	}
 }
 
-let nNodes = Int(Process.arguments[1])!
-let initValue = Int(Process.arguments[2])!
+let nNodes = Int(CommandLine.arguments[1])!
+let initValue = Int(CommandLine.arguments[2])!
 print("Ring size: \(nNodes)")
 print("Initial message value: \(initValue)")
 let system = ActorSystem(name: "Ring")
 var nodes = [ActorRef]()
 
 for i in 0..<nNodes {
-	var node = system.actorOf(NodeActor.self, name: "Node\(i)", args: [i, initValue])
+    var node = system.actorOf(name: "Node\(i)") {
+        context in NodeActor(context:context, args:[i, initValue])
+    }
 	nodes.append(node)
 }
 
