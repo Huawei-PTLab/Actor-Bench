@@ -48,7 +48,7 @@ struct Const: Expr {
 	func toString() -> String { return "\(value)" }
 }
 
-srandom(UInt32(NSDate().timeIntervalSince1970))
+srandom(UInt32(Date().timeIntervalSince1970))
 func getRand() -> Int {
     #if os(Linux)
         return random() % 10
@@ -82,12 +82,12 @@ var startTime: Double = 0.0
 var endTime: Double = 0.0
 
 func start() {
-	print(NSDate().description)
-	startTime = NSDate().timeIntervalSince1970
+	print(Date())
+	startTime = Date().timeIntervalSince1970
 }
 func end() {
-	endTime = NSDate().timeIntervalSince1970
-	print(NSDate().description)
+	endTime = Date().timeIntervalSince1970
+	print(Date())
 }
 func duration() {
 	print("Duration: \(endTime - startTime)")

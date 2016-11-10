@@ -65,8 +65,8 @@ class WriteActor: Actor {
 			// print(newPayload)
 		case is Stop:
 			print("Writer stopped!")
-			endTime = NSDate().timeIntervalSince1970
-			print("Stop: \(NSDate().description)")
+			endTime = Date().timeIntervalSince1970
+			print("Stop: \(Date())")
 			print("Duration: \(endTime - startTime)")
 			exit(0)
 		default:
@@ -80,8 +80,8 @@ let system = ActorSystem(name: "pipeline")
 let writeActor = system.actorOf(name: "writer", { (context: ActorCell) in WriteActor(context: context) })
 let indexActor = system.actorOf(name: "indexer", { (context: ActorCell) in IndexActor(context: context, writer: writeActor) })
 let downloadActor = system.actorOf(name: "downloader", { (context: ActorCell) in DownloadActor(context: context, indexer: indexActor) })
-startTime = NSDate().timeIntervalSince1970
-print("Start: \(NSDate().description)")
+startTime = Date().timeIntervalSince1970
+print("Start: \(Date())")
 for i in 1...nRequests {
 	downloadActor ! PayloadMessage(payload: "Requested \(i)", sender: nil)
 }

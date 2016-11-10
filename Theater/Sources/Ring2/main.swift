@@ -43,14 +43,14 @@ class NodeActor: Actor {
 		case let connect as Connect:
 			self.nextNode = connect.next
 		case is Start:
-			startTime = NSDate().timeIntervalSince1970
-			print("Start: \(NSDate().description)")
+			startTime = Date().timeIntervalSince1970
+			print("Start: \(Date())")
 			nextNode ! Token(id: nodeId, value: initValue, sender: this)
 		case let token as Token:
 			if token.value == 0 {
-				endTime = NSDate().timeIntervalSince1970
+				endTime = Date().timeIntervalSince1970
 				print(nodeId)
-				print("Stop: \(NSDate().description)")
+				print("Stop: \(Date())")
 				print("Duration: \(endTime - startTime)")
 				exit(0)
 			} else {

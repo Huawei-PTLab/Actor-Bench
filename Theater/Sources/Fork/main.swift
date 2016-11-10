@@ -33,7 +33,7 @@ class Node: Actor {
 		case is Start:
 			if currentLevel >= maxLevel {
 				// reach the maximum level
-				let endTime = NSDate().timeIntervalSince1970
+				let endTime = Date().timeIntervalSince1970
 				root ! TimeStamp(end: endTime, sender: this)
 			} else {
                 self.lChild = context.actorOf(name: "LN\(currentLevel + 1)", { (context: ActorCell) in Node(context: context, currentLevel: self.currentLevel + 1, root: self.root, maxLevel: self.maxLevel) })
@@ -56,7 +56,7 @@ class Node: Actor {
 
 class RootNode: Actor {
 	var timeStampCount = 0
-	let startTime: Double = NSDate().timeIntervalSince1970
+	let startTime: Double = Date().timeIntervalSince1970
 	var endTime: Double = 0.0
 	var lChild: ActorRef?
 	var rChild: ActorRef?
@@ -70,9 +70,9 @@ class RootNode: Actor {
 	override func receive(_ msg: Actor.Message) {
 		switch(msg) {
 		case is Start:
-			print("Started: \(NSDate().description)")
+			print("Started: \(Date())")
 			if maxLevel == 1 {
-				let endTime = NSDate().timeIntervalSince1970
+				let endTime = Date().timeIntervalSince1970
 				this ! TimeStamp(end: endTime, sender: this)
 			} else {
                 self.lChild = context.actorOf(name: "LN2", { (context: ActorCell) in Node(context: context, currentLevel: 2, root: self.this, maxLevel: self.maxLevel) })
@@ -86,7 +86,7 @@ class RootNode: Actor {
 			}
 			self.timeStampCount += 1
 			if self.timeStampCount == Int(pow(2.0, Double(maxLevel - 1))) {
-				print("Finished: \(NSDate().description)")
+				print("Finished: \(Date())")
 				print("Duration: \(self.endTime - self.startTime)")
 				exit(0)
 				if let left = self.lChild {

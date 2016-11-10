@@ -115,8 +115,8 @@ class Mall: Actor {
 	override func receive(_ msg: Actor.Message) {
 		switch(msg) {
 		case is Start:
-			print("Started: \(NSDate().description)")
-			startTime = NSDate().timeIntervalSince1970
+			print("Started: \(Date())")
+			startTime = Date().timeIntervalSince1970
 			for i in 0..<numChameneos {
                 let c = context.actorOf(name: "Chameneo\(i)", { (context: ActorCell) in Chameneo(context: context, mall: self.this, color: Color(rawValue: (i % 3))!, cid: i) })
 				c ! Start(sender: this)
@@ -125,8 +125,8 @@ class Mall: Actor {
 			self.numFaded += 1
 			self.sumMeetings += mcount.count
 			if numFaded == numChameneos {
-				endTime = NSDate().timeIntervalSince1970
-				print("Stopped: \(NSDate().description)")
+				endTime = Date().timeIntervalSince1970
+				print("Stopped: \(Date())")
 				print("Duration: \(endTime - startTime)")
 				print("Sum meetings: \(self.sumMeetings)")	// should be double of n
 				exit(0)

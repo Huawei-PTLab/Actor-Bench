@@ -39,7 +39,7 @@ class Node: Actor {
 		case is CreateTree:
 			if level == maxLevel {
 				// reach the maximum level
-				let endTime = NSDate().timeIntervalSince1970
+				let endTime = Date().timeIntervalSince1970
 				root ! TimeStamp(end: endTime, sender: this)
 			} else {
                 self.lChild = context.actorOf(name: "LN\(level + 1)", { (context: ActorCell) in Node(context: context, level: self.level + 1, root: self.root, maxLevel: self.maxLevel) })
@@ -62,7 +62,7 @@ class Node: Actor {
 
 class RootNode: Actor {
 	var timeStampCount = 0
-	var startTime: Double = NSDate().timeIntervalSince1970
+	var startTime: Double = Date().timeIntervalSince1970
 	var endTime: Double = 0.0
 	var lChild: ActorRef?
 	var rChild: ActorRef?
@@ -82,9 +82,9 @@ class RootNode: Actor {
 	override func receive(_ msg: Actor.Message) {
 		switch(msg) {
 		case is CreateTree:
-			print("Start creating tree: \(NSDate().description)")
+			print("Start creating tree: \(Date())")
 			if maxLevel == 1 {
-				let endTime = NSDate().timeIntervalSince1970
+				let endTime = Date().timeIntervalSince1970
 				this ! TimeStamp(end: endTime, sender: this)
 			} else {
                 self.lChild = context.actorOf(name: "LN2", { (context: ActorCell) in Node(context: context, level: 2, root: self.this, maxLevel: self.maxLevel) })
@@ -98,10 +98,10 @@ class RootNode: Actor {
 			}
 			self.timeStampCount += 1
 			if self.timeStampCount == totalLeafNode {
-				print("Finish creating tree: \(NSDate().description)")
+				print("Finish creating tree: \(Date())")
 				print("Duration: \(self.endTime - self.startTime)")
-				print("Start message passing: \(NSDate().description)")
-				startTime = NSDate().timeIntervalSince1970
+				print("Start message passing: \(Date())")
+				startTime = Date().timeIntervalSince1970
 				guard lChild != nil && rChild != nil else {
 					this ! Response(sender: this)
 					return
@@ -114,8 +114,8 @@ class RootNode: Actor {
 		case is Response:
 			responseCount += 1
 			if responseCount == totalLeafNode * nMsg {
-				self.endTime = NSDate().timeIntervalSince1970
-				print("Finish message passing: \(NSDate().description)")
+				self.endTime = Date().timeIntervalSince1970
+				print("Finish message passing: \(Date())")
 				print("Duration: \(self.endTime - self.startTime)")
 				exit(0)
 			}

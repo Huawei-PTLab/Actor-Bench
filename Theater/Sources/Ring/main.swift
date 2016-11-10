@@ -41,8 +41,8 @@ class NodeActor: Actor {
 		case let connect as Connect:
 			self.nextNode = connect.next
 		case is Start:
-			startTime = NSDate().timeIntervalSince1970
-			print("Start: \(NSDate().description)")
+			startTime = Date().timeIntervalSince1970
+			print("Start: \(Date())")
 			for _ in 0..<nRounds {
 				nextNode ! Token(id: nodeId, sender: this)
 			}
@@ -50,8 +50,8 @@ class NodeActor: Actor {
 			if token.id == nodeId {
 				returnCount += 1
 				if returnCount == nRounds {
-					endTime = NSDate().timeIntervalSince1970
-					print("Stop: \(NSDate().description)")
+					endTime = Date().timeIntervalSince1970
+					print("Stop: \(Date())")
 					print("Duration: \(endTime - startTime)")
 					exit(0)
 				}
