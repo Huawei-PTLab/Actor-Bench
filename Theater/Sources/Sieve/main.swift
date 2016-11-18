@@ -73,15 +73,6 @@ class Root: Actor {
         exit(0)
     }
     
-    override func postStop() {
-        print("all done")
-        endTime = Date().timeIntervalSince1970
-        print("Stop: \(Date())")
-        print("Duration: \(endTime - startTime)")
-//        this ! PoisonPill(sender: this)
-        exit(0)
-    }
-    
     override func receive(_ msg: Actor.Message) throws {
         switch msg {
         case is Start:
