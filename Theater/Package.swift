@@ -4,7 +4,7 @@ let package = Package(
    name: "Benchmark",
    targets: [],
    dependencies: [
-	   .Package(url: "git@github.com:Huawei-PTLab/Theater.git", versions: Version(1,2,0)..<Version(2,0,0)),
+	   .Package(url: "git@github.com:Huawei-PTLab/Theater.git", versions: Version(1,2,2)..<Version(2,0,0)),
    ]
    )
 

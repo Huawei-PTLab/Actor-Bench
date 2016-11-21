@@ -88,7 +88,7 @@ class RootNode: Actor {
 				this ! TimeStamp(end: endTime, sender: this)
 			} else {
                 self.lChild = context.actorOf(name: "LN2", { (context: ActorCell) in Node(context: context, level: 2, root: self.this, maxLevel: self.maxLevel) })
-                self.lChild = context.actorOf(name: "RN2", { (context: ActorCell) in Node(context: context, level: 2, root: self.this, maxLevel: self.maxLevel) })
+                self.rChild = context.actorOf(name: "RN2", { (context: ActorCell) in Node(context: context, level: 2, root: self.this, maxLevel: self.maxLevel) })
 				self.lChild! ! CreateTree(sender: nil)
 				self.rChild! ! CreateTree(sender: nil)
 			} 
@@ -117,7 +117,7 @@ class RootNode: Actor {
 				self.endTime = Date().timeIntervalSince1970
 				print("Finish message passing: \(Date())")
 				print("Duration: \(self.endTime - self.startTime)")
-				exit(0)
+				context.system.shutdown()
 			}
 		default:
 			print("Unexpected message")
@@ -130,4 +130,4 @@ let nMsg = Int(CommandLine.arguments[2])!
 let system = ActorSystem(name: "TreeMsg")
 let root = system.actorOf(name: "root", { (context: ActorCell) in RootNode(context: context, maxLevel: maxLevel, nMsg: nMsg) })
 root ! CreateTree(sender: nil)
-sleep(300)	// wait to complete
+_ = system.waitFor(seconds:300)	// wait to complete or timeout in 6 mins

@@ -129,7 +129,7 @@ class Mall: Actor {
 				print("Stopped: \(Date())")
 				print("Duration: \(endTime - startTime)")
 				print("Sum meetings: \(self.sumMeetings)")	// should be double of n
-				exit(0)
+				context.system.shutdown()
 			}
 		case let msg as Meet:
 			if self.n > 0 {
@@ -157,4 +157,4 @@ let nHost = Int(CommandLine.arguments[2])!
 let system = ActorSystem(name: "chameneos")
 let mallActor = system.actorOf(name: "mall", { (context: ActorCell) in Mall(context: context, n: nHost, numChameneos: nChameneos) })
 mallActor ! Start(sender: nil)
-sleep(6000)
+_ = system.waitFor(seconds:6000)	// wait to complete or timeout in 6 mins

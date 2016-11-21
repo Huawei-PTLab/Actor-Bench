@@ -52,7 +52,7 @@ class NodeActor: Actor {
 				print(nodeId)
 				print("Stop: \(Date())")
 				print("Duration: \(endTime - startTime)")
-				exit(0)
+				context.system.shutdown()
 			} else {
 				nextNode ! Token(id: token.id, value: token.value - 1, sender: this)
 			}
@@ -82,4 +82,4 @@ for i in 0..<nNodes {
 
 nodes[0] ! Start(sender: nil)
 
-sleep(300)	// wait to complete
+_ = system.waitFor(seconds:300)	// wait to complete or timeout in 6 mins

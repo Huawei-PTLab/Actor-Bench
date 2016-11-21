@@ -136,9 +136,10 @@ class Master: Actor {
 		case let i as ResultCount:
 			count += i.count
 			if count == nExpressions {
+                count = count + 1 //More slaves will not cause double shutdown
 				end()
 				duration()
-				exit(0)
+                context.system.shutdown()
 			}
 		default:
 			print("Unexpected message")
@@ -192,8 +193,8 @@ func actor() {
 		master ! Request(sender: nil)
 	}
 	master ! Stop(sender: nil)
+    _ = system.waitFor(seconds:1000) // wait to complete or timeout in 1000s
 }
 
 // sequential()
 actor()
-sleep(1000)	// wait to complete

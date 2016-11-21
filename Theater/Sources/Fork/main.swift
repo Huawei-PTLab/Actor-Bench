@@ -88,13 +88,7 @@ class RootNode: Actor {
 			if self.timeStampCount == Int(pow(2.0, Double(maxLevel - 1))) {
 				print("Finished: \(Date())")
 				print("Duration: \(self.endTime - self.startTime)")
-				exit(0)
-				if let left = self.lChild {
-					left ! Stop(sender: nil)
-				}
-				if let right = self.rChild {
-					right ! Stop(sender: nil)
-				}
+				context.system.shutdown()
 			}
 		default:
 			print("Unexpected message")
@@ -106,4 +100,4 @@ let maxLevel = Int(CommandLine.arguments[1])!
 let system = ActorSystem(name: "fork")
 let root = system.actorOf(name: "root", { (context: ActorCell) in RootNode(context: context, maxLevel: maxLevel) })
 root ! Start(sender: nil)
-sleep(3000)	// wait to complete
+_ = system.waitFor(seconds:3000) // wait to complete or timeout in 3000s

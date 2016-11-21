@@ -68,8 +68,8 @@ class WriteActor: Actor {
 			endTime = Date().timeIntervalSince1970
 			print("Stop: \(Date())")
 			print("Duration: \(endTime - startTime)")
-			exit(0)
-		default:
+			context.system.shutdown()
+        default:
 			print("Unexpected Message in WriterActor: \(msg)")
 		}
 	}
@@ -86,4 +86,4 @@ for i in 1...nRequests {
 	downloadActor ! PayloadMessage(payload: "Requested \(i)", sender: nil)
 }
 downloadActor ! Stop(sender: nil)
-sleep(100)	// wait to complete
+_ = system.waitFor(seconds:100)	// wait to complete or timeout in 100s

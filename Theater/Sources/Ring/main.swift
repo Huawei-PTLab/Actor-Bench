@@ -47,16 +47,17 @@ class NodeActor: Actor {
 				nextNode ! Token(id: nodeId, sender: this)
 			}
 		case let token as Token:
-			if token.id == nodeId {
+            if token.id == nodeId {
 				returnCount += 1
 				if returnCount == nRounds {
 					endTime = Date().timeIntervalSince1970
 					print("Stop: \(Date())")
 					print("Duration: \(endTime - startTime)")
-					exit(0)
+					context.system.shutdown()
 				}
-			}
-			nextNode ! Token(id: token.id, sender: this)
+            } else {
+			    nextNode ! Token(id: token.id, sender: this)
+            }
 		default:
 			print("Actor \(nodeId) got unexpected message: \(msg)")
 		}
@@ -81,4 +82,4 @@ for i in 0..<nNodes {
 }
 
 nodes[0] ! Start(sender: nil)
-sleep(30)	// wait to complete
+_ = system.waitFor(seconds:300)	// wait to complete or timeout in 6 mins
