@@ -88,7 +88,7 @@ class RootNode: Actor {
 				this ! TimeStamp(end: endTime, sender: this)
 			} else {
                 self.lChild = context.actorOf(name: "LN2", { (context: ActorCell) in Node(context: context, level: 2, root: self.this, maxLevel: self.maxLevel) })
-                self.lChild = context.actorOf(name: "RN2", { (context: ActorCell) in Node(context: context, level: 2, root: self.this, maxLevel: self.maxLevel) })
+                self.rChild = context.actorOf(name: "RN2", { (context: ActorCell) in Node(context: context, level: 2, root: self.this, maxLevel: self.maxLevel) })
 				self.lChild! ! CreateTree(sender: nil)
 				self.rChild! ! CreateTree(sender: nil)
 			} 
