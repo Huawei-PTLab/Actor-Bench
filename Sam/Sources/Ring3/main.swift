@@ -29,7 +29,7 @@ struct Passer: Actor {
 		self.partner = partner
 	}
 
-	func receive(_ msg: PassMessage) {
+	mutating func receive(_ msg: PassMessage) {
 		switch(msg) {
         case .connect(let partner):
             self.partner = partner

@@ -43,7 +43,7 @@ struct DownloadActor: Actor {
     public func childTerminated(_ child: ActorRef) { }
 }
 
-class IndexActor: Actor {
+struct IndexActor: Actor {
     unowned let actorContext: KnownActorCell<IndexActor>
     var context: ActorCell {
         get { return actorContext }
@@ -75,7 +75,7 @@ class IndexActor: Actor {
     public func childTerminated(_ child: ActorRef) { }
 }
 
-class WriteActor: Actor {
+struct WriteActor: Actor {
     unowned let actorContext: KnownActorCell<WriteActor>
     var context: ActorCell {
         get { return actorContext }

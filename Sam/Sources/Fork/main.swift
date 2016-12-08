@@ -8,7 +8,7 @@ enum ForkMessage: Message {
 }
 
 
-class Node: Actor {
+struct Node: Actor {
     unowned let actorContext: KnownActorCell<Node>
     var context: ActorCell {
         get { return actorContext }
@@ -29,7 +29,7 @@ class Node: Actor {
 		self.maxLevel = maxLevel
 	}
 
-	func receive(_ msg: Message) {
+	mutating func receive(_ msg: Message) {
 		switch(msg) {
 		case .start:
 			if currentLevel >= maxLevel {
@@ -37,8 +37,11 @@ class Node: Actor {
 				let endTime = Date().timeIntervalSince1970
 				root ! .timeStamp(endTime)
 			} else {
-                self.lChild = context.actorOf(name: "LN\(currentLevel + 1)", { (context: KnownActorCell<Node>) in Node(context: context, currentLevel: self.currentLevel + 1, root: self.root, maxLevel: self.maxLevel) })
-                self.rChild = context.actorOf(name: "RN\(currentLevel + 1)", { (context: KnownActorCell<Node>) in Node(context: context, currentLevel: self.currentLevel + 1, root: self.root, maxLevel: self.maxLevel) })
+                let root = self.root
+                let level = self.currentLevel + 1
+                let maxLevel = self.maxLevel
+                self.lChild = context.actorOf(name: "LN\(currentLevel + 1)", { (context: KnownActorCell<Node>) in Node(context: context, currentLevel: level, root: root, maxLevel: maxLevel) })
+                self.rChild = context.actorOf(name: "RN\(currentLevel + 1)", { (context: KnownActorCell<Node>) in Node(context: context, currentLevel: level, root: root, maxLevel: maxLevel) })
 				self.lChild! ! .start
 				self.rChild! ! .start
 			}
