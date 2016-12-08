@@ -106,7 +106,7 @@ struct Master: Actor {
         get { return actorContext }
     }
     
-    typealias Message = CalcMessage
+    typealias ActorMessage = CalcMessage
     
     let nSlaves: Int
     var count = 0
@@ -122,7 +122,7 @@ struct Master: Actor {
         self.nSlaves = slaves
     }
     
-    mutating func receive(_ msg: Message) {
+    mutating func receive(_ msg: CalcMessage) {
         switch(msg) {
         case .start:
             for i in 1...nSlaves {
@@ -135,7 +135,7 @@ struct Master: Actor {
             curSlave = (curSlave + 1) % nSlaves
         case .stop:
             for s in slaves {
-                s ! Slave.Message.stop(sender: ref)
+                s ! CalcMessage.stop(sender: ref)
             }
         case .resultCount(let i):
             count += i
@@ -160,7 +160,7 @@ struct Slave: Actor {
         get { return actorContext }
     }
 
-    typealias Message = CalcMessage
+    typealias ActorMessage = CalcMessage
     
 	var count = 0
 	let nOperators: Int
@@ -170,7 +170,7 @@ struct Slave: Actor {
 		self.nOperators = operators
 	}
 
-	mutating func receive(_ msg: Message) {
+	mutating func receive(_ msg: CalcMessage) {
 		switch(msg) {
 		case .request:
 			count += 1
@@ -212,7 +212,7 @@ func actor() {
 	for _ in 1...nExpressions {
 		master ! .request
 	}
-	master ! Master.Message.stop(sender: nil)
+	master ! CalcMessage.stop(sender: nil)
 }
 
 // sequential()

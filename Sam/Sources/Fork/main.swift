@@ -14,7 +14,7 @@ struct Node: Actor {
         get { return actorContext }
     }
     
-    typealias Message = ForkMessage
+    typealias ActorMessage = ForkMessage
 
 	let currentLevel: Int
 	let maxLevel: Int
@@ -29,7 +29,7 @@ struct Node: Actor {
 		self.maxLevel = maxLevel
 	}
 
-	mutating func receive(_ msg: Message) {
+	mutating func receive(_ msg: ForkMessage) {
 		switch(msg) {
 		case .start:
 			if currentLevel >= maxLevel {
@@ -70,7 +70,7 @@ struct RootNode: Actor {
         get { return actorContext }
     }
     
-    typealias Message = ForkMessage
+    typealias ActorMessage = ForkMessage
     
     var timeStampCount = 0
 	let startTime: Double = Date().timeIntervalSince1970
@@ -84,7 +84,7 @@ struct RootNode: Actor {
 		self.maxLevel = maxLevel
 	}
 
-	mutating func receive(_ msg: Message) {
+	mutating func receive(_ msg: ForkMessage) {
 		switch(msg) {
 		case .start:
 			print("Started: \(Date())")

@@ -17,7 +17,7 @@ struct DownloadActor: Actor {
         get { return actorContext }
     }
     
-    typealias Message = PipelineMessage
+    typealias ActorMessage = PipelineMessage
 
 	let indexer: KnownActorRef<IndexActor>
     init(context: KnownActorCell<DownloadActor>, indexer: KnownActorRef<IndexActor>) {
@@ -25,7 +25,7 @@ struct DownloadActor: Actor {
 		self.indexer = indexer
 	}
     
-	func receive(_ msg: Message) {
+	func receive(_ msg: PipelineMessage) {
 		switch(msg) {
 		case .payload(let payload):
 			let newPayload = payload.replacingOccurrences(of: "Requested", with: "Downloaded")
@@ -49,7 +49,7 @@ struct IndexActor: Actor {
         get { return actorContext }
     }
     
-    typealias Message = PipelineMessage
+    typealias ActorMessage = PipelineMessage
 	let writer: KnownActorRef<WriteActor>
     
     init(context: KnownActorCell<IndexActor>, writer: KnownActorRef<WriteActor>) {
@@ -57,7 +57,7 @@ struct IndexActor: Actor {
 		self.writer = writer
 	}
 	
-    func receive(_ msg: Message) {
+    func receive(_ msg: PipelineMessage) {
 		switch(msg) {
 		case .payload(let payload):
 			let newPayload = payload.replacingOccurrences(of: "Downloaded", with: "Indexed")
@@ -81,13 +81,13 @@ struct WriteActor: Actor {
         get { return actorContext }
     }
     
-    typealias Message = PipelineMessage
+    typealias ActorMessage = PipelineMessage
     
     init(context: KnownActorCell<WriteActor>) {
         self.actorContext = context
     }
     
-	func receive(_ msg: Message) {
+	func receive(_ msg: PipelineMessage) {
 		switch(msg) {
 		case .payload(let payload):
 			let _ = payload.replacingOccurrences(of: "Indexed", with: "Written")
