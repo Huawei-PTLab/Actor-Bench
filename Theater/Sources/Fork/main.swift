@@ -88,7 +88,10 @@ class RootNode: Actor {
 			if self.timeStampCount == Int(pow(2.0, Double(maxLevel - 1))) {
 				print("Finished: \(Date())")
 				print("Duration: \(self.endTime - self.startTime)")
-				context.system.shutdown()
+                // The right way to shut down the system is call shutdown()
+                // Calling exit(0) is faster and doesn't matter in a benchmark
+                // context.system.shutdown()
+                exit(0)
 			}
 		default:
 			print("Unexpected message")

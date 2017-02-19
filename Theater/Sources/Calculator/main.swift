@@ -139,7 +139,10 @@ class Master: Actor {
                 count = count + 1 //More slaves will not cause double shutdown
 				end()
 				duration()
-                context.system.shutdown()
+                // The right way to shut down the system is call shutdown()
+                // Calling exit(0) is faster and doesn't matter in a benchmark
+                // context.system.shutdown()
+                exit(0)
 			}
 		default:
 			print("Unexpected message")

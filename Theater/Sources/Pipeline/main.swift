@@ -68,7 +68,10 @@ class WriteActor: Actor {
 			endTime = Date().timeIntervalSince1970
 			print("Stop: \(Date())")
 			print("Duration: \(endTime - startTime)")
-			context.system.shutdown()
+            // The right way to shut down the system is call shutdown()
+            // Calling exit(0) is faster and doesn't matter in a benchmark
+            // context.system.shutdown()
+            exit(0)
         default:
 			print("Unexpected Message in WriterActor: \(msg)")
 		}

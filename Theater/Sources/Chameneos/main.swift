@@ -129,7 +129,10 @@ class Mall: Actor {
 				print("Stopped: \(Date())")
 				print("Duration: \(endTime - startTime)")
 				print("Sum meetings: \(self.sumMeetings)")	// should be double of n
-				context.system.shutdown()
+                // The right way to shut down the system is call shutdown()
+                // Calling exit(0) is faster and doesn't matter in a benchmark
+                // context.system.shutdown()
+                exit(0)
 			}
 		case let msg as Meet:
 			if self.n > 0 {
